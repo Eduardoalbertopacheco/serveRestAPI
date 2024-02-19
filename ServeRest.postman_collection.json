@@ -1,0 +1,401 @@
+{
+	"info": {
+		"_postman_id": "a332011b-f7ff-461d-97bf-d53f621a7a86",
+		"name": "ServeRest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17564914"
+	},
+	"item": [
+		{
+			"name": "geração de massa",
+			"item": [
+				{
+					"name": "busca nova pessoa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// capturar noem, email. senha\r",
+									"console.log(pm.response.json().results[0].name.first)\r",
+									"pm.globals.set(\"userName\", pm.response.json().results[0].name.first)\r",
+									"pm.globals.set(\"userEmail\", pm.response.json().results[0].email)\r",
+									"pm.globals.set(\"userPassword\", pm.response.json().results[0].login.password)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://randomuser.me/api/",
+							"protocol": "https",
+							"host": [
+								"randomuser",
+								"me"
+							],
+							"path": [
+								"api",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"edu@teste.com\",\r\n    \"password\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://serverest.dev/login",
+							"protocol": "https",
+							"host": [
+								"serverest",
+								"dev"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "usuários",
+			"item": [
+				{
+					"name": "Novo Cadastro",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.globals.unset(\"schema\");\r",
+									"\r",
+									"pm.globals.set(\"schema\", {\r",
+									"  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\r",
+									"  \"type\": \"object\",\r",
+									"  \"properties\": {\r",
+									"    \"message\": {\r",
+									"      \"type\": \"string\"\r",
+									"    },\r",
+									"    \"_id\": {\r",
+									"      \"type\": \"string\"\r",
+									"    }\r",
+									"  },\r",
+									"  \"required\": [\r",
+									"    \"message\",\r",
+									"    \"_id\"\r",
+									"  ]\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Validar status code 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Validar a Mensagem\", function () {\r",
+									"    pm.expect(pm.response.json().message).to.be.eql(\"Cadastro realizado com sucesso\")\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Capturar id\", function() {\r",
+									"    pm.globals.set(\"userId\", pm.response.json()._id)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Schema é válido\", function(){\r",
+									"    pm.expect(tv4.validate(pm.response.json(), pm.globals.get('schema'))).to.be.true;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nome\": \"{{userName}}\",\r\n    \"email\": \"{{userEmail}}\",\r\n    \"password\": \"{{userPassword}}\",\r\n    \"administrador\": \"false\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://serverest.dev/usuarios",
+							"protocol": "https",
+							"host": [
+								"serverest",
+								"dev"
+							],
+							"path": [
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "buscar usuário pelo id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// status code, contrato, validar se o id retornado foi o solicitado, validar email\r",
+									"\r",
+									"pm.test(\"Validar o id retornado\", function(){\r",
+									"    console.log(pm.globals.get(\"userId\"))\r",
+									"    console.log(pm.response.json()._id)\r",
+									"    \r",
+									"    pm.expect(pm.response.json()._id).to.be.eql(pm.globals.get(\"userId\"))\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/usuarios/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"usuarios",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update de usuário",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Validar mensagem de registro alterado com sucesso\", function(){\r",
+									"    pm.expect(pm.response.json().message).to.be.eql(\"Registro alterado com sucesso\")\r",
+									"\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nome\": \"{{userName}}\",\r\n    \"email\": \"{{userEmail}}\",\r\n    \"password\": \"{{userPassword}}\",\r\n    \"administrador\": \"true\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/usuarios/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"usuarios",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "buscar usuário pelo atualizado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Validar alteração de usuário para administrador\", function(){\r",
+									"    pm.expect(pm.response.json().administrador).to.be.eql(\"true\")\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/usuarios/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"usuarios",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deletar usuário da base",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Validar mensagem de registro excluído com sucesso\", function(){\r",
+									"    pm.expect(pm.response.json().message).to.be.eql(\"Registro excluído com sucesso\")\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/usuarios/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"usuarios",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
